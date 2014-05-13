@@ -63,18 +63,19 @@ public:
 			int count = 0;
 			int currentNumListItem = 0;
 			NumLength = 0;
-			for (int i = firstNonZeroPosRight; i >= firstNonZeroPosLeft; i--)
+			int startItem=firstNonZeroPosRight>tempDecimalPos?firstNonZeroPosRight:tempDecimalPos;
+			for (int i = startItem; i >= firstNonZeroPosLeft; i--)
 			{
 				if (numStr.at(i) != '.'){
 					if (count < 4){
-						NumList[currentNumListItem] += (numStr.at(i) - '0')*pow(10, count);
+						NumList[currentNumListItem] += (numStr.at(i) - '0')*(signed short)pow((double)10, count);
 						count++;
 					}
 					else{
 						count = 0;
 						currentNumListItem++;
 
-						NumList[currentNumListItem] += (numStr.at(i) - '0')*pow(10, count);
+						NumList[currentNumListItem] += (numStr.at(i) - '0')*(signed short)pow((double)10, count);
 						count++;
 					}
 				}
@@ -182,29 +183,78 @@ public:
 		}
 		cout << endl;
 	}
+
+	BigNum operator* (BigNum& secBigNum){
+		// define the multiplicand (largger) and multiplier (lesser)
+		BigNum* multiplicand;
+		BigNum* multiplier;
+		if(NumLength>=(secBigNum).NumLength){
+			multiplicand=this;
+			multiplier=&secBigNum;
+		}else{
+			multiplicand=&secBigNum;
+			multiplier=this;
+		}
+
+		// Compute Numlist and NumLength
+		BigNum returnValue("0");
+		for(int i=0;i<(*multiplier).NumLength;i++){
+			for(int j=0;j<(*multiplicand).NumLength;j++){
+				int currentIndex=i+j;
+				long tempValue=(*multiplier).NumList[i] * (*multiplicand).NumList[j];
+				if(tempValue>=10000){
+					returnValue.NumList[currentIndex]+=tempValue%10000;
+					returnValue.NumList[currentIndex+1]+=tempValue/10000;
+					for(int k=currentIndex;returnValue.NumList[k]>10000;k++){
+						returnValue.NumList[k]-=10000;
+						returnValue.NumList[k+1]++;
+					}
+
+					returnValue.NumLength=returnValue.NumLength>(currentIndex+2)?returnValue.NumLength:(currentIndex+2);
+				}else{
+					returnValue.NumList[currentIndex]+=tempValue;
+					for(int k=currentIndex;returnValue.NumList[k]>10000;k++){
+						returnValue.NumList[k]-=10000;
+						returnValue.NumList[k+1]++;
+					}
+					returnValue.NumLength=returnValue.NumLength>(currentIndex+1)?returnValue.NumLength:(currentIndex+1);
+				}
+			}
+		}
+
+		// compute DecimalPointPosition
+		returnValue.DecimalPointPosition=DecimalPointPosition+(secBigNum).DecimalPointPosition;
+
+		return returnValue;
+	}
 };
 
-double long myPower(double long x, int n)
+BigNum myPower(BigNum x, int n)
 {
-	if (n == 1)
+	if(n==0){
+		return BigNum("1");
+	}else if (n == 1)
 	{
 		return x;
 	}
 	else if (n % 2 == 0){
-		double long temp = myPower(x, n / 2);
+		BigNum temp = myPower(x, n / 2);
 		return temp*temp;
 	}
 	else{
-		double long temp = myPower(x, (n - 1) / 2);
+		BigNum temp = myPower(x, (n - 1) / 2);
 		return x*temp*temp;
 	}
 }
 
 
 int main(){
-	string temp;
-	while (cin >> temp){
-		BigNum b(temp);
-		b.Print();
+	string s;
+	int n;
+	while(cin>>s>>n){
+		BigNum x(s);
+		BigNum value("0");
+		value=myPower(x,n);
+		value.Print();
 	}
 }
