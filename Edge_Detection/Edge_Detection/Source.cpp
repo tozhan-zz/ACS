@@ -14,7 +14,29 @@ public:
 		value = -1;
 		next = NULL;
 	}
+
 };
+
+void AddNode(CheckPointNode* head, int newValue)
+{
+	CheckPointNode* newNode = new CheckPointNode();
+	(*newNode).value = newValue;
+	
+	CheckPointNode* previousNode = head;
+	CheckPointNode* currNode = head->next;
+	for (; currNode!= NULL; previousNode = currNode, currNode = currNode->next)
+	{
+		if (newValue < currNode->value){
+			previousNode->next = newNode;
+			newNode->next = currNode;
+			break;
+		}
+	}
+
+	if (currNode == NULL){
+		previousNode->next = newNode;
+	}
+}
 
 unsigned short GetPixelValue(vector<unsigned short> * pixelVec, vector<int> PosVec, int position, int startIndex, int endIndex)
 {
@@ -87,5 +109,92 @@ int main()
 
 		CheckPointNode* previousNode, currentNode;
 		previousNode = head;
+		for (int i = 0; i < originalItemLength; i++){
+			int currChangePos = positionVec.at(i) + 1;
+
+			// situation 1
+			if (currChangePos < width)
+			{
+				if (!checkPointsSet.count(currChangePos))
+				{
+					checkPointsSet.insert(currChangePos);
+					AddNode(head, currChangePos);
+				}
+
+				if (!checkPointsSet.count(currChangePos + 1))
+				{
+
+					checkPointsSet.insert(currChangePos + 1);
+					AddNode(head, currChangePos + 1);
+				}
+
+				if ((currChangePos + width - 1) <= positionVec.at(originalItemLength - 1))
+				{
+					if (!checkPointsSet.count(currChangePos + width - 1)){
+						checkPointsSet.insert(currChangePos + width - 1);
+						AddNode(head, currChangePos + width - 1);
+					}
+				}
+
+				if ((currChangePos + width + 1) <= positionVec.at(originalItemLength - 1))
+				{
+					if (!checkPointsSet.count(currChangePos + width + 1)){
+						checkPointsSet.insert(currChangePos + width + 1);
+						AddNode(head, currChangePos + width + 1);
+					}
+				}
+			}
+			//situation 2
+			else if (currChangePos == width)
+			{
+				if (!checkPointsSet.count(currChangePos - 1)){
+					checkPointsSet.insert(currChangePos - 1);
+					AddNode(head, currChangePos - 1);
+				}
+
+				if (!checkPointsSet.count(currChangePos)){
+					checkPointsSet.insert(currChangePos);
+					AddNode(head, currChangePos);
+				}
+
+				if ((currChangePos + width - 1) <= positionVec.at(originalItemLength - 1))
+				{
+					if (!checkPointsSet.count(currChangePos + width - 1)){
+						checkPointsSet.insert(currChangePos + width - 1);
+						AddNode(head, currChangePos + width - 1);
+					}
+				}
+			}
+			//situation 3
+			else if (currChangePos%width == 1)
+			{
+				if ((currChangePos - width)>0)
+				{
+					if (!checkPointsSet.count(currChangePos - width)){
+						checkPointsSet.insert(currChangePos - width);
+						AddNode(head, currChangePos - width);
+					}
+				}
+
+				if (!checkPointsSet.count(currChangePos)){
+					checkPointsSet.insert(currChangePos);
+					AddNode(head, currChangePos);
+				}
+
+				if ((currChangePos + width) <= positionVec.at(originalItemLength - 1))
+				{
+					if (!checkPointsSet.count(currChangePos + width)){
+						checkPointsSet.insert(currChangePos + width);
+						AddNode(head, currChangePos + width);
+					}
+				}
+			}
+
+			//situation 4
+			else if (currChangePos%width == 0)
+			{
+
+			}
+		}
 	}
 }
